@@ -1,5 +1,7 @@
 Watrbx Linux Launcher
 
+<img width="1600" height="800" alt="watree" src="https://github.com/user-attachments/assets/92945cde-1e14-4e84-913c-55d720d7d6b0" />
+
 A simple Linux launcher for Watrbx, a 2016 Roblox revival that runs through Wine.
 It lets you join games directly from your browser or from the terminal on most major Linux distros.
 
