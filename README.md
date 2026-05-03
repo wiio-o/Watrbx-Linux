@@ -114,7 +114,7 @@ Notes
 - Uses "diddy" as auth ticket (Watrbx-defined)
 - Requires 32-bit Wine prefix
 - Some DLL cleanup happens automatically
-- Yes, there are hacks. Yes, it works.
+- Yes, it works.
 
 ------------------------------------------------------------
 
