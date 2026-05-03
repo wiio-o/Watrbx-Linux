@@ -1,3 +1,4 @@
+
 <img width="1600" height="800" alt="watree" src="https://github.com/user-attachments/assets/3dc84b64-415c-45e2-bda6-643e718513cb" />
 
 Watrbx Linux Launcher
@@ -42,13 +43,14 @@ Play
 
 Browser method (recommended)
 
-./watrbx-launcher.sh --fix-firefox
+First:
+1. Close Firefox completely
 
 Then:
-1. Close Firefox completely
-2. Reopen it
-3. Go to watrbx.wtf
-4. Press Play
+1. ./watrbx-launcher.sh --fix-firefox
+3. Reopen it
+4. Go to watrbx.wtf
+5. Press Play
 
 Terminal method
 
