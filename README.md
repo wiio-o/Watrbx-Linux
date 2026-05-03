@@ -1,120 +1,120 @@
 Watrbx Linux Launcher
 
-<img width="1600" height="800" alt="watree" src="https://github.com/user-attachments/assets/92945cde-1e14-4e84-913c-55d720d7d6b0" />
+A simple Linux launcher for Watrbx, a 2016 Roblox revival running through Wine.
 
-A simple Linux launcher for Watrbx, a 2016 Roblox revival that runs through Wine.
-It lets you join games directly from your browser or from the terminal on most major Linux distros.
+It lets you join games from your browser or terminal on most Linux systems.
+
+Not perfect. Just functional.
+
+------------------------------------------------------------
 
 Requirements
 
-- Linux (Fedora, Arch, Ubuntu, Debian, openSUSE, or similar)
-- Firefox (recommended for browser joining)
+- Linux (Fedora / Arch / Ubuntu / Debian / openSUSE or similar)
 - wine
 - winetricks
 - curl
 - python3
+- Firefox (recommended)
 
-Do not worry if some of these are missing. The setup script installs what it can automatically.
+If something is missing, the setup script will try to install it.
 
-Installation
+------------------------------------------------------------
+
+Install
 
 chmod +x watrbx-launcher.sh
 ./watrbx-launcher.sh
 
-During setup, the launcher will:
+The script will:
+- install dependencies
+- create a 32-bit Wine prefix
+- install DirectX / VC++ / DXVK runtimes
+- download Watrbx
+- register browser handler
+- patch Firefox (if available)
 
-- Detect your distro and install needed packages
-- Create a 32-bit Wine prefix
-- Install DirectX 9, DXVK, Visual C++ runtimes, and required DLL overrides
-- Download and install Watrbx
-- Register the watrbx-player:// protocol handler
-- Patch Firefox so the Play button works properly
+------------------------------------------------------------
 
-Playing
+Play
 
 Browser method (recommended)
 
-1. Run:
-   ./watrbx-launcher.sh --fix-firefox
+./watrbx-launcher.sh --fix-firefox
 
-2. Fully close Firefox and reopen it
-
-3. Visit watrbx.wtf, choose a game, and press Play
+Then:
+1. Close Firefox completely
+2. Reopen it
+3. Go to watrbx.wtf
+4. Press Play
 
 Terminal method
 
-./watrbx-launcher.sh --play [PLACE-ID]
+./watrbx-launcher.sh --play <PLACE-ID>
 
 Example:
-
 ./watrbx-launcher.sh --play 958
+
+------------------------------------------------------------
 
 Commands
 
-./watrbx-launcher.sh
-    Run setup or install launcher components
+--play [id]        Join a game by place ID
+--debug            Show debug info
+--fix-firefox      Fix watrbx-player:// handler
+--clear-logs       Clear logs
+--reset            Wipe Wine prefix and reinstall
 
-./watrbx-launcher.sh --play [ID]
-    Join a game by place ID
-
-./watrbx-launcher.sh --debug
-    Show debug info and DLL status
-
-./watrbx-launcher.sh --fix-firefox
-    Re-apply Firefox protocol patch
-
-./watrbx-launcher.sh --clear-logs
-    Remove launcher and Wine logs
-
-./watrbx-launcher.sh --reset
-    Delete Wine prefix and reinstall everything
+------------------------------------------------------------
 
 How it works
 
-- Clicking Play in Firefox opens a watrbx-player:// link
-- The launcher catches the link and fixes Firefox formatting issues
-- It checks the PlaceLauncher API until the server is ready
-- It verifies the join script URL
-- Wine starts RobloxPlayerLauncher.exe with the correct launch data
-- Two terminal windows open:
-  one for game output, one for live debug logs
+1. Browser or terminal sends a watrbx-player:// link
+2. Launcher catches it
+3. Contacts Watrbx PlaceLauncher API
+4. Waits for server readiness
+5. Fetches join script
+6. Launches Wine + Roblox client
+7. Game starts (hopefully)
+
+------------------------------------------------------------
+
+Known issues
+
+Join failures:
+Sometimes joining works, sometimes it doesn't.
+Caused by backend timing and server response inconsistency.
+
+Crash popup:
+A random "serious error" popup may appear.
+It is ignored and does not affect gameplay.
+
+------------------------------------------------------------
 
 Tested on
+- Fedora 43 KDE
+- Wine 9.x staging
+- NVIDIA GTX 1060 (DXVK)
+- AMD RADV Vulkan
 
-- Fedora 43 with KDE Plasma
-- Wine 9.21 TkG Staging NTsync
-- NVIDIA GTX 1060 using DXVK and Vulkan
-- AMD Radeon using RADV
+Works elsewhere too, probably.
 
-It may also work on other systems, but results can vary.
+------------------------------------------------------------
 
-Known Issues
+Logs
+~/.local/share/watrbx/launcher.log
 
-- Long loading times
-
-  Some Watrbx servers can take 30 to 120+ seconds to respond.
-  This is a server-side issue.
-
-- Join failures
-
-  Sometimes the server fails to send the join script.
-  Close the game and try again.
-
-- Roblox crash popup
-
-  This may appear while loading.
-  Usually caused by Watrbx itself, not the launcher.
+------------------------------------------------------------
 
 Notes
+- Uses "diddy" as auth ticket (Watrbx-defined)
+- Requires 32-bit Wine prefix
+- Some DLL cleanup happens automatically
+- Yes, there are hacks. Yes, it works.
 
-- The launcher uses "diddy" as the auth ticket.
-  This is the token currently hardcoded by Watrbx.
+------------------------------------------------------------
 
-- Any 64-bit DLLs added by the updater are removed automatically.
-  Watrbx needs a 32-bit Wine prefix for best compatibility.
-
-- Logs are stored at:
-
-  ~/.local/share/watrbx/launcher.log
-
-Made with too much debugging, a hidden Easter egg, and a lot of patience.
+Made with:
+- too much bash
+- too much Wine debugging
+- stubbornness
