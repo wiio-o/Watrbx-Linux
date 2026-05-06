@@ -1,4 +1,3 @@
-cat > ~/Games/watrbx-installer.sh << 'EOF'
 #!/usr/bin/env bash
 # ============================================================
 #  Watrbx Linux Installer
@@ -44,28 +43,50 @@ install_deps() {
     success "Dependencies installed"
 }
 
-get_current_version() {
+get_player_exe() {
     find "$VERSION_DIR" -name "RobloxPlayerLauncher.exe" 2>/dev/null | head -n1 || true
 }
 
-update_desktop_file() {
-    local LAUNCHER_PATH="$1"
+get_studio_exe() {
+    find "$VERSION_DIR" -name "RobloxStudioLauncherBeta.exe" 2>/dev/null | head -n1 || true
+}
 
-    cat > ~/.local/share/applications/watrbx-player.desktop << DESKTOP
+update_desktop_files() {
+    local PLAYER_PATH="$1"
+    local STUDIO_PATH="$2"
+
+    # Player desktop file
+    if [ -n "$PLAYER_PATH" ]; then
+        cat > ~/.local/share/applications/watrbx-player.desktop << DESKTOP
 [Desktop Entry]
 Name=Watrbx Player
 Type=Application
-Exec=env WINEPREFIX="$WINEPREFIX" wine "$LAUNCHER_PATH" %u
+Exec=env WINEPREFIX="$WINEPREFIX" wine "$PLAYER_PATH" %u
 Icon=B7CC_RobloxPlayerLauncher.0
 StartupNotify=true
 StartupWMClass=robloxplayerlauncher.exe
 MimeType=x-scheme-handler/watrbx-player;
 DESKTOP
+        success "Player desktop file updated"
+    fi
+
+    # Studio desktop file
+    if [ -n "$STUDIO_PATH" ]; then
+        cat > ~/.local/share/applications/watrbx-studio.desktop << DESKTOP
+[Desktop Entry]
+Name=Watrbx Studio
+Type=Application
+Exec=env WINEPREFIX="$WINEPREFIX" wine "$STUDIO_PATH"
+Icon=B7CC_RobloxStudioLauncherBeta.0
+StartupNotify=true
+StartupWMClass=robloxstudiolauncherbeta.exe
+Categories=Development;
+DESKTOP
+        success "Studio desktop file updated"
+    fi
 
     update-desktop-database ~/.local/share/applications 2>/dev/null || true
     xdg-mime default watrbx-player.desktop x-scheme-handler/watrbx-player 2>/dev/null || true
-
-    success "Desktop integration updated"
 }
 
 update_watrbx() {
@@ -80,12 +101,13 @@ update_watrbx() {
 
     rm -f "$TEMP_INSTALLER"
 
-    local NEW_VERSION
-    NEW_VERSION=$(get_current_version)
+    local PLAYER_EXE STUDIO_EXE
+    PLAYER_EXE=$(get_player_exe)
+    STUDIO_EXE=$(get_studio_exe)
 
-    if [ -n "$NEW_VERSION" ]; then
+    if [ -n "$PLAYER_EXE" ] || [ -n "$STUDIO_EXE" ]; then
         success "Watrbx installed/updated"
-        update_desktop_file "$NEW_VERSION"
+        update_desktop_files "$PLAYER_EXE" "$STUDIO_EXE"
     else
         die "Installation failed"
     fi
@@ -122,7 +144,7 @@ PYEOF
     success "Firefox configured"
 }
 
-# -- Main --------------------------------------------------
+# -- Main -----------------------------------
 
 print_banner
 
@@ -148,18 +170,25 @@ if [ ! -d "$WINEPREFIX" ]; then
 fi
 
 # Install/Update Watrbx
-CURRENT_VERSION=$(get_current_version)
+PLAYER_EXE=$(get_player_exe)
+STUDIO_EXE=$(get_studio_exe)
 
-if [ -z "$CURRENT_VERSION" ]; then
+if [ -z "$PLAYER_EXE" ] && [ -z "$STUDIO_EXE" ]; then
     info "Installing Watrbx..."
     update_watrbx
 else
-    success "Watrbx found: $(basename "$(dirname "$CURRENT_VERSION")")"
+    if [ -n "$PLAYER_EXE" ]; then
+        success "Player found: $(basename "$(dirname "$PLAYER_EXE")")"
+    fi
+    if [ -n "$STUDIO_EXE" ]; then
+        success "Studio found: $(basename "$(dirname "$STUDIO_EXE")")"
+    fi
+
     read -rp "Update? [y/N] " UPDATE
     if [[ "${UPDATE,,}" == "y" ]]; then
         update_watrbx
     else
-        update_desktop_file "$CURRENT_VERSION"
+        update_desktop_files "$PLAYER_EXE" "$STUDIO_EXE"
     fi
 fi
 
@@ -169,11 +198,13 @@ fix_firefox
 echo ""
 success "Installation complete!"
 echo ""
-echo "  To play:"
+echo "  To play games:"
 echo "  1. Fully quit and restart Firefox"
 echo "  2. Go to watrbx.wtf"
 echo "  3. Click Play on any game"
 echo ""
-EOF
-
-chmod +x ~/Games/watrbx-installer.sh
+if [ -n "$(get_studio_exe)" ]; then
+    echo "  To launch Studio:"
+    echo "  - Search 'Watrbx Studio' in your app launcher"
+    echo ""
+fi
