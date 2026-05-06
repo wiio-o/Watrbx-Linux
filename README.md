@@ -1,124 +1,55 @@
 
 <img width="1600" height="800" alt="watree" src="https://github.com/user-attachments/assets/3dc84b64-415c-45e2-bda6-643e718513cb" />
 
-Watrbx Linux Launcher (Experimental)
+Watrbx Linux Installer
 
-A simple Linux launcher for Watrbx, a 2016 Roblox revival running through Wine.
+A lightweight Linux installer for the Watrbx runtime using Wine.
 
-It lets you join games from your browser or terminal on most Linux systems.
+This tool sets up a local Wine prefix, installs the Watrbx player, and
+integrates a custom protocol handler for browser-based launching.
 
-Not perfect. Just functional.
+FEATURES
 
-------------------------------------------------------------
+-   Installs Watrbx into an isolated Wine prefix
+-   Automatically configures desktop integration
+-   Adds custom watrbx-player:// protocol handler
+-   Attempts Firefox handler registration (user-level only)
+-   Simple CLI-based installer with minimal dependencies
 
-Requirements
+REQUIREMENTS
 
-- Linux (Fedora / Arch / Ubuntu / Debian / openSUSE or similar)
-- wine
-- winetricks
-- curl
-- python3
-- Firefox (recommended)
+-   wine (Staging recommended)
+-   curl
+-   python3
+-   firefox
+-   xdg-utils
 
-If something is missing, the setup script will try to install it.
+INSTALLATION
 
-------------------------------------------------------------
+chmod +x install.sh ./install.sh
 
-Install
+WHAT IT DOES
 
-chmod +x watrbx-launcher.sh
-./watrbx-launcher.sh
+-   Creates a Wine prefix in: ~/.local/share/watrbx/wine
 
-The script will:
-- install dependencies
-- create a 32-bit Wine prefix
-- install DirectX / VC++ / DXVK runtimes
-- download Watrbx
-- register browser handler
-- patch Firefox (if available)
+-   Downloads and runs the Watrbx installer inside Wine
 
-------------------------------------------------------------
+-   Registers a desktop entry for launching the player
 
-Play
+-   Adds custom protocol handler: watrbx-player://
 
-Browser method (recommended)
+-   Attempts Firefox configuration for handling the protocol
 
-First:
-1. Close Firefox completely
+-   Updates The Watrbx Player inside Wine
 
-Then:
-1. ./watrbx-launcher.sh --fix-firefox
-3. Reopen it
-4. Go to watrbx.wtf
-5. Press Play
+NOTES
 
-Terminal method
+-   Modifies user-level Firefox configuration (handlers.json)
+-   Wine applications are contained in the local prefix
+-   No system-wide changes outside desktop integration files
 
-./watrbx-launcher.sh --play <PLACE-ID>
+DISCLAIMER
 
-Example:
-./watrbx-launcher.sh --play 958
-
-------------------------------------------------------------
-
-Commands
-
---play [id]        Join a game by place ID
---debug            Show debug info
---fix-firefox      Fix watrbx-player:// handler
---clear-logs       Clear logs
---reset            Wipe Wine prefix and reinstall
-
-------------------------------------------------------------
-
-How it works
-
-1. Browser or terminal sends a watrbx-player:// link
-2. Launcher catches it
-3. Contacts Watrbx PlaceLauncher API
-4. Waits for server readiness
-5. Fetches join script
-6. Launches Wine + Roblox client
-7. Game starts (hopefully)
-
-------------------------------------------------------------
-
-Known issues
-
-Join failures:
-Sometimes joining works, sometimes it doesn't.
-Caused by backend timing and server response inconsistency.
-
-Crash popup:
-A random "serious error" popup may appear.
-It is ignored and does not affect gameplay.
-
-------------------------------------------------------------
-
-Tested on
-- Fedora 43 KDE
-- Wine 9.x staging
-- NVIDIA GTX 1060 (DXVK)
-- AMD RADV Vulkan
-
-Works elsewhere too, probably.
-
-------------------------------------------------------------
-
-Logs
-~/.local/share/watrbx/launcher.log
-
-------------------------------------------------------------
-
-Notes
-- Uses "diddy" as auth ticket (Watrbx-defined)
-- Requires 32-bit Wine prefix
-- Some DLL cleanup happens automatically
-- Yes, it works.
-
-------------------------------------------------------------
-
-Made with:
-- too much bash
-- too much Wine debugging
-- stubbornness
+This project is not affiliated with or endorsed by any existing game
+platforms or companies. All trademarks belong to their respective
+owners.
