@@ -9,11 +9,14 @@ set -euo pipefail
 WINEPREFIX="$HOME/.local/share/watrbx/wine"
 INSTALLER_URL="https://www.watrbx.wtf/RobloxPlayerLauncher.exe"
 VERSION_DIR="$WINEPREFIX/drive_c/users/$USER/AppData/Local/Watrbx/Versions"
+LOG_FILE="$HOME/.local/share/watrbx/installer.log"
 
-info()    { echo "[INFO] $*"; }
-success() { echo "[OK] $*"; }
-warn()    { echo "[WARN] $*"; }
-die()     { echo "[ERROR] $*" >&2; exit 1; }
+mkdir -p "$(dirname "$LOG_FILE")"
+
+info()    { echo "[INFO] $*"; echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO: $*" >> "$LOG_FILE"; }
+success() { echo "[OK] $*"; echo "[$(date '+%Y-%m-%d %H:%M:%S')] OK: $*" >> "$LOG_FILE"; }
+warn()    { echo "[WARN] $*"; echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN: $*" >> "$LOG_FILE"; }
+die()     { echo "[ERROR] $*" >&2; echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR: $*" >> "$LOG_FILE"; exit 1; }
 
 print_banner() {
     echo ""
@@ -97,7 +100,7 @@ update_watrbx() {
 
     info "Running installer..."
     export WINEPREFIX
-    wine "$TEMP_INSTALLER" 2>&1 | grep -v "fixme:" || true
+    wine "$TEMP_INSTALLER" 2>&1 | tee -a "$LOG_FILE" | grep -v "fixme:" || true
 
     rm -f "$TEMP_INSTALLER"
 
@@ -144,7 +147,120 @@ PYEOF
     success "Firefox configured"
 }
 
-# -- Main -----------------------------------
+uninstall() {
+    print_banner
+    warn "This will remove:"
+    echo "  - Wine prefix: $WINEPREFIX"
+    echo "  - Desktop files"
+    echo "  - URI handler configuration"
+    echo ""
+    read -rp "Continue? [y/N] " CONFIRM
+
+    if [[ "${CONFIRM,,}" != "y" ]]; then
+        info "Uninstall cancelled"
+        exit 0
+    fi
+
+    info "Uninstalling Watrbx..."
+
+    # Kill Wine
+    WINEPREFIX="$WINEPREFIX" wineserver -k 2>/dev/null || true
+
+    # Remove Wine prefix
+    if [ -d "$WINEPREFIX" ]; then
+        rm -rf "$WINEPREFIX"
+        success "Removed Wine prefix"
+    fi
+
+    # Remove desktop files
+    rm -f ~/.local/share/applications/watrbx-player.desktop
+    rm -f ~/.local/share/applications/watrbx-studio.desktop
+    update-desktop-database ~/.local/share/applications 2>/dev/null || true
+    success "Removed desktop files"
+
+    # Remove logs
+    rm -f "$LOG_FILE"
+
+    success "Uninstall complete!"
+}
+
+show_debug() {
+    print_banner
+    echo "=== Debug Information ==="
+    echo ""
+    echo "Wine version: $(wine --version 2>/dev/null || echo 'NOT INSTALLED')"
+    echo "Wine prefix: $WINEPREFIX"
+    echo "Prefix exists: $([ -d "$WINEPREFIX" ] && echo 'Yes' || echo 'No')"
+    echo ""
+
+    local PLAYER_EXE STUDIO_EXE
+    PLAYER_EXE=$(get_player_exe)
+    STUDIO_EXE=$(get_studio_exe)
+
+    echo "Player exe: ${PLAYER_EXE:-NOT FOUND}"
+    echo "Studio exe: ${STUDIO_EXE:-NOT FOUND}"
+    echo ""
+
+    echo "Desktop files:"
+    [ -f ~/.local/share/applications/watrbx-player.desktop ] && echo "  [OK] watrbx-player.desktop" || echo "  [!!] watrbx-player.desktop missing"
+    [ -f ~/.local/share/applications/watrbx-studio.desktop ] && echo "  [OK] watrbx-studio.desktop" || echo "  [!!] watrbx-studio.desktop missing"
+    echo ""
+
+    echo "Firefox profile:"
+    local FF_PROFILE
+    FF_PROFILE=$(find "$HOME/.mozilla/firefox" -maxdepth 1 \
+        \( -name "*.default-release" -o -name "*.default" \) -type d 2>/dev/null | head -n1 || true)
+
+    if [ -n "$FF_PROFILE" ]; then
+        echo "  Found: $FF_PROFILE"
+        if [ -f "$FF_PROFILE/handlers.json" ]; then
+            if grep -q "watrbx-player" "$FF_PROFILE/handlers.json" 2>/dev/null; then
+                echo "  [OK] URI handler configured"
+            else
+                echo "  [!!] URI handler NOT configured"
+            fi
+        else
+            echo "  [!!] handlers.json missing"
+        fi
+    else
+        echo "  [!!] Firefox profile not found"
+    fi
+    echo ""
+
+    echo "Log file: $LOG_FILE"
+    if [ -f "$LOG_FILE" ]; then
+        echo "Last 10 lines:"
+        tail -10 "$LOG_FILE" | sed 's/^/  /'
+    else
+        echo "  No log file"
+    fi
+}
+
+# -- Main --------------------------------------------------
+
+case "${1:-install}" in
+    --uninstall)
+        uninstall
+        exit 0
+        ;;
+    --debug)
+        show_debug
+        exit 0
+        ;;
+    --update)
+        print_banner
+        info "Updating Watrbx..."
+        update_watrbx
+        exit 0
+        ;;
+    install)
+        # Continue to installation below
+        ;;
+    *)
+        echo "Usage: $0 [--uninstall|--debug|--update]"
+        exit 1
+        ;;
+esac
 
 print_banner
 
@@ -205,6 +321,13 @@ echo "  3. Click Play on any game"
 echo ""
 if [ -n "$(get_studio_exe)" ]; then
     echo "  To launch Studio:"
-    echo "  - Search 'Watrbx Studio' in your app launcher"
+echo "  - Search 'Watrbx Studio' in your app launcher"
     echo ""
 fi
+echo "  Commands:"
+echo "    $0 --update     Update Watrbx"
+echo "    $0 --debug      Show debug info"
+echo "    $0 --uninstall  Remove everything"
+echo ""
+echo "  Log: $LOG_FILE"
+echo ""
