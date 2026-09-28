@@ -8,6 +8,8 @@ A lightweight Linux installer for the Watrbx runtime using Wine.
 This tool sets up a local Wine prefix, installs the Watrbx player, and
 integrates a custom protocol handler for browser-based launching.
 
+(OUTDATED DUE TO WATRBX DYING OUT OF NO WHERE. ON JUNE, and is best instead for editing the code for any other revival!)
+
 COMMANDS
 
 - ./watrbx-launcher.sh --debug | Displays Debug info
